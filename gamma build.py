@@ -1,18 +1,25 @@
 import tkinter as tk
 import math
 
-direction = 0  
-keys = {'Up': False, 'Down': False, 'Left': False, 'Right': False, 'Z': False, 'F': False, '0': False, 'B': False}
+direction = 315
+keys = {'Up': False, 'Down': False, 'Left': False, 'Right': False, 'Z': False, 'F': False, '0': False, 'B': False, 'T': False}
 lines = []  # Список для хранения линий
 
 def draw_line(event):
     global direction
     x1, y1 = event.x, event.y
-    x2 = x1 + 60 * math.cos(math.radians(direction))
-    y2 = y1 + 60 * math.sin(math.radians(direction))
-    line = canvas.create_line(x1, y1, x2, y2, width=5)
-    lines.append(line)  # Сохраняем линию
-
+    x2 = x1 + 100 * math.cos(math.radians(direction))
+    y2 = y1 + 100 * math.sin(math.radians(direction))
+    
+    # Если клавиша 'B' зажата, рисуем двойную линию
+    if keys['B']:
+        double_bond(x1, y1, x2, y2)
+    # Если клавиша 'T' зажата, рисуем тройную линию
+    elif keys['T']:
+        double_bond(x1, y1, x2, y2, triple=True)
+    else:
+        line = canvas.create_line(x1, y1, x2, y2, width=5)
+        lines.append(line)
 def delete_last_line():
     if lines:
         canvas.delete(lines.pop())
@@ -27,22 +34,22 @@ def delete_line_under_cursor(event):
                 if (min(x1, x2) <= x <= max(x1, x2)) and (min(y1, y2) <= y <= max(y1, y2)):
                     canvas.delete(line)  # Удаляем линию
                     lines.remove(line)  # Убираем из списка
-def double_bond(event):
-    if keys['B']:
-        x, y = event.x, event.y
-        for line in lines:
-            coords = canvas.coords(line)
-            if coords:  # Проверяем наличие координат линии
-                x1, y1, x2, y2 = coords
-                if (min(x1, x2) <= x <= max(x1, x2)) and (min(y1, y2) <= y <= max(y1, y2)):
-                    canvas.delete(line)  # Удаляем линию
-                    lines.remove(line)  # Убираем из списка
-                    line1 = canvas.create_line(x1-5, y1-5, x2-5, y2-5, width=5)
-                    line2 = canvas.create_line(x1+5, y1+5, x2+5, y2+5, width=5)
-                    lines.append(line1)  # Сохраняем линию
-                    lines.append(line2)
 
-        
+
+def double_bond(x1, y1, x2, y2, offset=8, triple=False):
+    line1 = canvas.create_line(x1, y1, x2, y2, width=5)
+    lines.append(line1)
+
+    # Рисуем вторую линию параллельно первой
+    dx = offset * math.sin(math.radians(direction))
+    dy = offset * math.cos(math.radians(direction))
+    line2 = canvas.create_line(x1 + dx, y1 - dy, x2 + dx, y2 - dy, width=5)
+    lines.append(line2)
+
+    # Если triple=True, добавляем третью линию для тройной связи
+    if triple:
+        line3 = canvas.create_line(x1 - dx, y1 + dy, x2 - dx, y2 + dy, width=5)
+        lines.append(line3)
 
 def key_press(event):
     if event.keysym in keys:
@@ -90,4 +97,3 @@ root.mainloop()
 
 
 
-#####разделить код на состовляющие: один файл отвеющий за инпут, один за сохранение молекулы, нап
